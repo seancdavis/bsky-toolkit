@@ -1,7 +1,42 @@
 ---
 import Layout from '@/layouts/Layout.astro';
+import { getUserPosts } from '@/utils/bsky';
+
+// Only fetch posts
+let posts = [];
+let error = null;
+
+try {
+  const result = await getUserPosts({ limit: 10 });
+  posts = result.posts;
+} catch (e) {
+  error = e?.message || 'Failed to fetch posts';
+}
 ---
 
-<Layout title="Astro">
-  <h1>Astro</h1>
+<Layout title="Bluesky Posts">
+  <div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-6">Recent Bluesky Posts</h1>
+
+    {
+      error && (
+        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6" role="alert">
+          <p>{error}</p>
+        </div>
+      )
+    }
+
+    {posts.length === 0 && !error && <p>No posts found.</p>}
+
+    <div class="space-y-4">
+      {
+        posts.map((post) => (
+          <div class="bg-white p-4 rounded shadow">
+            <p class="text-gray-500 text-sm">{new Date(post.post.indexedAt).toLocaleString()}</p>
+            <p class="mt-2">{post.post.record.text}</p>
+          </div>
+        ))
+      }
+    </div>
+  </div>
 </Layout>
